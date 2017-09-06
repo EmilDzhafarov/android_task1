@@ -1,9 +1,11 @@
-package ua.nure.dzhafarov.task1;
+package ua.nure.dzhafarov.task1.activities;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
+
+import ua.nure.dzhafarov.task1.R;
 
 public abstract class SingleFragmentActivity extends AppCompatActivity {
 

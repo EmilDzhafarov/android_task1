@@ -5,7 +5,7 @@ import android.database.CursorWrapper;
 
 import java.util.Date;
 
-import ua.nure.dzhafarov.task1.User;
+import ua.nure.dzhafarov.task1.models.User;
 
 import static ua.nure.dzhafarov.task1.database.UserDBSchema.UserTable.Columns.BIRTHDAY;
 import static ua.nure.dzhafarov.task1.database.UserDBSchema.UserTable.Columns.NAME;

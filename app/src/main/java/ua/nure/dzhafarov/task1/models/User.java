@@ -1,4 +1,4 @@
-package ua.nure.dzhafarov.task1;
+package ua.nure.dzhafarov.task1.models;
 
 import java.util.Date;
 import java.util.UUID;

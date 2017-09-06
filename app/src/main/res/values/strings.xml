@@ -15,4 +15,6 @@
     <string name="error_save_user_empty_name">User name is empty</string>
     <string name="error_save_user_empty_surname">User surname is empty</string>
     <string name="error_save_user_invalid_birthday_date">User\'s birthday is after now</string>
+    
+    <string name="not_users">There haven\'t users here yet</string>
 </resources>

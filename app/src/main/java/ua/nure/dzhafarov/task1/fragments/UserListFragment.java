@@ -1,4 +1,4 @@
-package ua.nure.dzhafarov.task1;
+package ua.nure.dzhafarov.task1.fragments;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -14,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.Calendar;
@@ -22,10 +23,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import ua.nure.dzhafarov.task1.R;
+import ua.nure.dzhafarov.task1.models.User;
+import ua.nure.dzhafarov.task1.utils.UserLab;
+import ua.nure.dzhafarov.task1.activities.UserActivity;
+
 import static java.util.Calendar.DATE;
 import static java.util.Calendar.MONTH;
 import static java.util.Calendar.YEAR;
-import static ua.nure.dzhafarov.task1.UserFragment.ARG_USER_ID;
+import static ua.nure.dzhafarov.task1.fragments.UserFragment.ARG_USER_ID;
 
 public class UserListFragment extends Fragment {
     
@@ -33,6 +39,7 @@ public class UserListFragment extends Fragment {
     
     private RecyclerView recyclerView;
     private UserAdapter userAdapter;
+    private LinearLayout linearLayout;
     private UUID lastUserId;
 
     @Override
@@ -53,6 +60,8 @@ public class UserListFragment extends Fragment {
         DividerItemDecoration dividerItemDecoration =
                 new DividerItemDecoration(recyclerView.getContext(), manager.getOrientation());
         recyclerView.addItemDecoration(dividerItemDecoration);
+        
+        linearLayout = (LinearLayout) view.findViewById(R.id.linear_layout_for_non_users); 
         
         updateUI();
 
@@ -94,6 +103,14 @@ public class UserListFragment extends Fragment {
         UserLab userLab = UserLab.getInstance(getActivity());
         List<User> users = userLab.getUsers();
 
+        if (users.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            linearLayout.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            linearLayout.setVisibility(View.GONE);
+        }
+        
         if (userAdapter == null) {
             userAdapter = new UserAdapter(users);
             recyclerView.setAdapter(userAdapter);

@@ -1,4 +1,4 @@
-package ua.nure.dzhafarov.task1;
+package ua.nure.dzhafarov.task1.fragments;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -14,6 +14,8 @@ import android.widget.DatePicker;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
+import ua.nure.dzhafarov.task1.R;
 
 
 public class DatePickerFragment extends DialogFragment {

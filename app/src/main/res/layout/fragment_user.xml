@@ -6,18 +6,49 @@
     android:layout_height="match_parent"
     android:padding="8dp">
 
-    <EditText
-        android:id="@+id/edit_text_user_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/hint_user_name"/>
-
-    <EditText
+    <LinearLayout
         android:layout_marginTop="16dp"
-        android:id="@+id/edit_text_user_surname"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/hint_user_surname"/>
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/hint_user_name"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+        
+        <EditText
+            android:id="@+id/edit_text_user_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3" 
+            android:inputType="textPersonName"/>
+        
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_marginTop="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/hint_user_surname"
+            android:textAppearance="?android:attr/textAppearanceMedium"/>
+        
+        <EditText
+            android:id="@+id/edit_text_user_surname"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:inputType="textPersonName"/>
+        
+    </LinearLayout>
     
     
     <LinearLayout
@@ -31,17 +62,15 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/text_user_birthday"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:gravity="center"/>
-        />
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+        
         <Button
             android:id="@+id/button_birthday_date"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="4"
+            android:layout_weight="3"
             android:background="@color/colorAccent"
-            android:textColor="#FFF"
-            android:layout_marginLeft="8dp" />
+            android:textColor="#FFF" />
         
     </LinearLayout>
     

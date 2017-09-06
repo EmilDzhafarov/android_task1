@@ -1,4 +1,4 @@
-package ua.nure.dzhafarov.task1;
+package ua.nure.dzhafarov.task1.fragments;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -18,6 +18,10 @@ import android.widget.Toast;
 
 import java.util.Date;
 import java.util.UUID;
+
+import ua.nure.dzhafarov.task1.R;
+import ua.nure.dzhafarov.task1.models.User;
+import ua.nure.dzhafarov.task1.utils.UserLab;
 
 public class UserFragment extends Fragment {
     

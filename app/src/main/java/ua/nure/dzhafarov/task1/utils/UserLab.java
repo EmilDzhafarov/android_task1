@@ -1,4 +1,4 @@
-package ua.nure.dzhafarov.task1;
+package ua.nure.dzhafarov.task1.utils;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -7,10 +7,10 @@ import android.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import ua.nure.dzhafarov.task1.database.UserBaseHelper;
 import ua.nure.dzhafarov.task1.database.UserCursorWrapper;
+import ua.nure.dzhafarov.task1.models.User;
 
 import static ua.nure.dzhafarov.task1.database.UserDBSchema.UserTable.Columns.BIRTHDAY;
 import static ua.nure.dzhafarov.task1.database.UserDBSchema.UserTable.Columns.NAME;

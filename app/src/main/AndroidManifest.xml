@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity 
-            android:name=".UserListActivity">
+            android:name=".activities.UserListActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -19,9 +19,9 @@
         </activity>
         
         <activity 
-            android:name=".UserActivity"
+            android:name=".activities.UserActivity"
             android:label="@string/label_user_profile"
-            android:parentActivityName=".UserListActivity"/>
+            android:parentActivityName=".activities.UserListActivity"/>
       
     </application>
 
