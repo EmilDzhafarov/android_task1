@@ -73,7 +73,7 @@ public class UserListFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_list_users, menu);
     }
-
+    
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -87,29 +87,34 @@ public class UserListFragment extends Fragment {
     }
     
     @Override
-    public void onResume() {
-        super.onResume();
-        updateUI();
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_USER_ID && resultCode == Activity.RESULT_OK) {
             lastUserId = (UUID) data.getSerializableExtra(ARG_USER_ID);
         }
     }
+    
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateUI();
+    }
 
+    private void deleteUserAndUpdateUI(User user) {
+        UserLab userLab = UserLab.getInstance(getActivity());
+        int pos = userLab.indexOfById(user.getId());
+
+        userAdapter.notifyItemRemoved(pos);
+        userLab.deleteUser(user);
+        List<User> users = userLab.getUsers();
+        userAdapter.setUsers(users);
+        checkOnEmptyUsers(users);
+    }
+    
     private void updateUI() {
         UserLab userLab = UserLab.getInstance(getActivity());
         List<User> users = userLab.getUsers();
 
-        if (users.isEmpty()) {
-            recyclerView.setVisibility(View.GONE);
-            linearLayout.setVisibility(View.VISIBLE);
-        } else {
-            recyclerView.setVisibility(View.VISIBLE);
-            linearLayout.setVisibility(View.GONE);
-        }
+        checkOnEmptyUsers(users);
         
         if (userAdapter == null) {
             userAdapter = new UserAdapter(users);
@@ -120,9 +125,18 @@ public class UserListFragment extends Fragment {
             userAdapter.notifyItemChanged(pos);
         }
     }
+
+    private void checkOnEmptyUsers(List<User> users) {
+        if (users.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            linearLayout.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            linearLayout.setVisibility(View.GONE);
+        }
+    }
     
-    private class UserHolder extends RecyclerView.ViewHolder implements View.OnClickListener,
-            View.OnCreateContextMenuListener {
+    private class UserHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
         
         private User user;
         
@@ -131,7 +145,6 @@ public class UserListFragment extends Fragment {
         
         UserHolder(View itemView) {
             super(itemView);
-            itemView.setOnClickListener(this);
             itemView.setLongClickable(true);
             itemView.setOnCreateContextMenuListener(this);
             fullName = (TextView) itemView.findViewById(R.id.user_list_item_fullname);
@@ -163,12 +176,6 @@ public class UserListFragment extends Fragment {
             cal.setTime(date);
             return cal;
         }
-        
-        @Override
-        public void onClick(View v) {
-            Intent intent = UserActivity.newIntent(getActivity(), user.getId());
-            startActivityForResult(intent, REQUEST_USER_ID);
-        }
 
         @Override
         public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -188,9 +195,7 @@ public class UserListFragment extends Fragment {
                         startActivityForResult(intent, REQUEST_USER_ID);
                         return true;
                     case R.id.delete_user:
-                        UserLab.getInstance(getActivity()).deleteUser(user);
-                        userAdapter = null;
-                        updateUI();
+                        deleteUserAndUpdateUI(user);
                         return true;
                     default:
                         return false;       
