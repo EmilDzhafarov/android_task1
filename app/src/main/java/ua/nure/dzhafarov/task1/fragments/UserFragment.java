@@ -27,6 +27,7 @@ public class UserFragment extends Fragment {
     
     public static final String ARG_USER_ID = "user_id";
     private static final String DIALOG_DATE = "DialogDate";
+    private static final String USER_DATA = "user_data";
     private static final int REQUEST_DATE = 0;
     
     private User user;
@@ -63,6 +64,10 @@ public class UserFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater ,ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_user, container, false);
+        
+        if (savedInstanceState != null) {
+            user = (User) savedInstanceState.getSerializable(USER_DATA);
+        }
         
         nameEditText = (EditText) v.findViewById(R.id.edit_text_user_name);
         nameEditText.setText(user.getName());
@@ -109,9 +114,15 @@ public class UserFragment extends Fragment {
             updateDate();
         }
     }
-    
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable(USER_DATA, user);
+    }
+
     private void updateDate() {
-        dateButton.setText(DateFormat.format("dd.MM.yyyy", user.getBirthday()));
+        dateButton.setText(DateFormat.format("dd MMM yyyy", user.getBirthday()));
     }
     
     private void saveUser() {

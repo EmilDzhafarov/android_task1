@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Simple App</string>
+    <string name="app_name">Task#1</string>
     <string name="hint_user_name">Name</string>
     <string name="hint_user_surname">Surname</string>
     <string name="text_user_birthday">Birthday</string>
@@ -16,5 +16,5 @@
     <string name="error_save_user_empty_surname">User surname is empty</string>
     <string name="error_save_user_invalid_birthday_date">User\'s birthday is after now</string>
     
-    <string name="not_users">There are not users here</string>
+    <string name="not_users">There are still not users here</string>
 </resources>
