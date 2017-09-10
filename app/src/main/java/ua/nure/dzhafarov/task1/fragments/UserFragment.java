@@ -31,11 +31,10 @@ public class UserFragment extends Fragment {
     private static final int REQUEST_DATE = 0;
     
     private User user;
+    private boolean isNewUser;
     
     private EditText nameEditText;
-
     private EditText surnameEditText;
-    
     private Button dateButton;
 
     public static UserFragment newInstance(UUID id) {
@@ -50,12 +49,18 @@ public class UserFragment extends Fragment {
     @Override
     public void onCreate(Bundle saveBundleState) {
         super.onCreate(saveBundleState);
-        UUID id = (UUID) getArguments().getSerializable(ARG_USER_ID);
-        
-        if (id == null) {
-            user = new User();
+
+        if (saveBundleState != null) {
+            user = (User) saveBundleState.getSerializable(USER_DATA);
         } else {
-            user = UserLab.getInstance(getActivity()).getUserById(id);
+            UUID id = (UUID) getArguments().getSerializable(ARG_USER_ID);
+
+            if (id == null) {
+                user = new User();
+                isNewUser = true;
+            } else {
+                user = UserLab.getInstance(getActivity()).getUserById(id);
+            }   
         }
         
         setHasOptionsMenu(true);
@@ -63,19 +68,20 @@ public class UserFragment extends Fragment {
     
     @Override
     public View onCreateView(LayoutInflater inflater ,ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_user, container, false);
-        
-        if (savedInstanceState != null) {
-            user = (User) savedInstanceState.getSerializable(USER_DATA);
-        }
-        
-        nameEditText = (EditText) v.findViewById(R.id.edit_text_user_name);
+        return inflater.inflate(R.layout.fragment_user, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        nameEditText = (EditText) view.findViewById(R.id.edit_text_user_name);
         nameEditText.setText(user.getName());
-        
-        surnameEditText = (EditText) v.findViewById(R.id.edit_text_user_surname);
+
+        surnameEditText = (EditText) view.findViewById(R.id.edit_text_user_surname);
         surnameEditText.setText(user.getSurname());
-        
-        dateButton = (Button) v.findViewById(R.id.button_birthday_date);
+
+        dateButton = (Button) view.findViewById(R.id.button_birthday_date);
         dateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -86,10 +92,8 @@ public class UserFragment extends Fragment {
             }
         });
         updateDate();
-        
-        return v;
     }
-    
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
@@ -150,22 +154,15 @@ public class UserFragment extends Fragment {
             user.setSurname(surname);
             
             saveUserInDb();
-            sendUserId();
+            getActivity().setResult(Activity.RESULT_OK);
             getActivity().finish();
         }
-    }
-
-    private void sendUserId() {
-        Intent intent = new Intent();
-        intent.putExtra(ARG_USER_ID, user.getId());
-        getActivity().setResult(Activity.RESULT_OK, intent);
     }
     
     private void saveUserInDb() {
         UserLab lab = UserLab.getInstance(getActivity());
-        User u = lab.getUserById(user.getId());
-
-        if (u == null) {
+        
+        if (isNewUser) {
             lab.addUser(user);
         } else {
             lab.updateUser(user);

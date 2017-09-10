@@ -21,8 +21,7 @@ import static ua.nure.dzhafarov.task1.database.UserDBSchema.UserTable.TABLE_NAME
 public class UserLab {
     
     private static UserLab instance;
-
-    private Context context;
+    
     private SQLiteDatabase database;
     
     public static synchronized UserLab getInstance(Context context) {
@@ -34,9 +33,7 @@ public class UserLab {
     }
     
     private UserLab(Context context) {
-        this.context = context.getApplicationContext();
-        database = new UserBaseHelper(context).getWritableDatabase();
-        
+        database = new UserBaseHelper(context.getApplicationContext()).getWritableDatabase();
     }
     
     public List<User> getUsers() {
@@ -118,18 +115,5 @@ public class UserLab {
         String uuid = user.getId().toString();
 
         database.delete(TABLE_NAME, UUID + " = ?", new String[] {uuid});
-    }
-    
-    public int indexOfById(java.util.UUID id) {
-        int i = 0;
-        for (User user : getUsers()) {
-            if (user.getId().equals(id)) {
-                return i;
-            }
-            
-            i++;
-        }
-        
-        return -1;
     }
 }

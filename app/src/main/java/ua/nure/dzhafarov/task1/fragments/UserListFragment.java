@@ -7,40 +7,32 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
 
 import ua.nure.dzhafarov.task1.R;
+import ua.nure.dzhafarov.task1.adapters.UserAdapter;
 import ua.nure.dzhafarov.task1.models.User;
 import ua.nure.dzhafarov.task1.utils.UserLab;
 import ua.nure.dzhafarov.task1.activities.UserActivity;
 
-import static java.util.Calendar.DATE;
-import static java.util.Calendar.MONTH;
-import static java.util.Calendar.YEAR;
-import static ua.nure.dzhafarov.task1.fragments.UserFragment.ARG_USER_ID;
-
 public class UserListFragment extends Fragment {
     
-    public static final int REQUEST_USER_ID = 1;
-    
+    public static final int REQUEST_UPDATE_UI = 1;
+
     private RecyclerView recyclerView;
+    private TextView textViewForNonUsers;
     private UserAdapter userAdapter;
-    private LinearLayout linearLayout;
-    private UUID lastUserId;
+    
+    private List<User> users;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,192 +42,80 @@ public class UserListFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_user_list, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         
-        View view = inflater.inflate(R.layout.fragment_user_list, container, false);
-        
+        textViewForNonUsers = (TextView) view.findViewById(R.id.text_view_for_non_users); 
         recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         LinearLayoutManager manager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(manager);
-        
+
         DividerItemDecoration dividerItemDecoration =
                 new DividerItemDecoration(recyclerView.getContext(), manager.getOrientation());
         recyclerView.addItemDecoration(dividerItemDecoration);
         
-        linearLayout = (LinearLayout) view.findViewById(R.id.linear_layout_for_non_users); 
-        
+        users = new ArrayList<>();
+        userAdapter = new UserAdapter(users, this);
+        recyclerView.setAdapter(userAdapter);
         updateUI();
-
-        return view;
     }
-    
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_list_users, menu);
     }
-    
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_add_user:
                 Intent intent = new Intent(getActivity(), UserActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, REQUEST_UPDATE_UI);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
-    
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_USER_ID && resultCode == Activity.RESULT_OK) {
-            lastUserId = (UUID) data.getSerializableExtra(ARG_USER_ID);
+        if (requestCode == REQUEST_UPDATE_UI && resultCode == Activity.RESULT_OK) {
+            updateUI();
         }
     }
-    
-    @Override
-    public void onResume() {
-        super.onResume();
-        updateUI();
-    }
 
-    private void deleteUserAndUpdateUI(User user) {
-        UserLab userLab = UserLab.getInstance(getActivity());
-        int pos = userLab.indexOfById(user.getId());
+    public void deleteUserAndUpdateUI(User user) {
+        int pos = users.indexOf(user);
 
+        users.remove(user);
         userAdapter.notifyItemRemoved(pos);
-        userLab.deleteUser(user);
-        List<User> users = userLab.getUsers();
-        userAdapter.setUsers(users);
-        checkOnEmptyUsers(users);
+        UserLab.getInstance(getActivity()).deleteUser(user);
+        
+        checkForEmptyUsers(users);
     }
-    
+
     private void updateUI() {
         UserLab userLab = UserLab.getInstance(getActivity());
-        List<User> users = userLab.getUsers();
-
-        checkOnEmptyUsers(users);
         
-        if (userAdapter == null) {
-            userAdapter = new UserAdapter(users);
-            recyclerView.setAdapter(userAdapter);
-        } else {
-            userAdapter.setUsers(users);
-            int pos = userLab.indexOfById(lastUserId);
-            userAdapter.notifyItemChanged(pos);
-        }
+        users.clear();
+        users.addAll(userLab.getUsers());
+        userAdapter.notifyDataSetChanged();
+
+        checkForEmptyUsers(users);
     }
 
-    private void checkOnEmptyUsers(List<User> users) {
+    private void checkForEmptyUsers(List<User> users) {
         if (users.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
-            linearLayout.setVisibility(View.VISIBLE);
+            textViewForNonUsers.setVisibility(View.VISIBLE);
         } else {
             recyclerView.setVisibility(View.VISIBLE);
-            linearLayout.setVisibility(View.GONE);
-        }
-    }
-    
-    private class UserHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
-        
-        private User user;
-        
-        private TextView fullName;
-        private TextView age;
-        
-        UserHolder(View itemView) {
-            super(itemView);
-            itemView.setLongClickable(true);
-            itemView.setOnCreateContextMenuListener(this);
-            fullName = (TextView) itemView.findViewById(R.id.user_list_item_fullname);
-            age = (TextView) itemView.findViewById(R.id.user_list_item_age);
-        }
-
-        void bindUser(User u) {
-            this.user = u;
-            fullName.setText(String.format("%s %s", user.getName(), user.getSurname()));
-            age.setText(String.format(
-                    Locale.US,"%d y/o", getDiffYears(user.getBirthday(), new Date()))
-            );
-        }
-
-        private int getDiffYears(Date first, Date last) {
-            Calendar a = getCalendar(first);
-            Calendar b = getCalendar(last);
-            
-            int diff = b.get(YEAR) - a.get(YEAR);
-            if (a.get(MONTH) > b.get(MONTH) ||
-                    (a.get(MONTH) == b.get(MONTH) && a.get(DATE) > b.get(DATE))) {
-                diff--;
-            }
-            return diff;
-        }
-
-        private Calendar getCalendar(Date date) {
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(date);
-            return cal;
-        }
-
-        @Override
-        public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-            MenuItem edit = menu.add(Menu.NONE, R.id.edit_user, Menu.NONE, R.string.edit_user);
-            MenuItem delete = menu.add(Menu.NONE, R.id.delete_user, Menu.NONE, R.string.delete_user);
-
-            edit.setOnMenuItemClickListener(onChange);
-            delete.setOnMenuItemClickListener(onChange);
-        }
-
-        private final MenuItem.OnMenuItemClickListener onChange = new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()){
-                    case R.id.edit_user:
-                        Intent intent = UserActivity.newIntent(getActivity(), user.getId());
-                        startActivityForResult(intent, REQUEST_USER_ID);
-                        return true;
-                    case R.id.delete_user:
-                        deleteUserAndUpdateUI(user);
-                        return true;
-                    default:
-                        return false;       
-                }
-            }
-        };
-    }
-    
-    private class UserAdapter extends RecyclerView.Adapter<UserHolder> {
-        
-        private List<User> users;
-
-        UserAdapter(List<User> users) {
-            this.users = users;
-        }
-
-        @Override
-        public UserHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-            View view = inflater.inflate(R.layout.user_list_item, parent, false);
-
-            return new UserHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(UserHolder holder, int position) {
-            holder.bindUser(users.get(position));
-        }
-
-        @Override
-        public int getItemCount() {
-            return users.size();
-        }
-
-        void setUsers(List<User> users) {
-            this.users = users;
-        }
-        
-        List<User> getUsers() {
-            return users;
+            textViewForNonUsers.setVisibility(View.GONE);
         }
     }
 }
