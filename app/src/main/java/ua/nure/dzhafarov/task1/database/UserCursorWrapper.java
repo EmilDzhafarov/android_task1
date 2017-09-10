@@ -3,6 +3,8 @@ package ua.nure.dzhafarov.task1.database;
 import android.database.Cursor;
 import android.database.CursorWrapper;
 
+import org.threeten.bp.LocalDate;
+
 import java.util.Date;
 
 import ua.nure.dzhafarov.task1.models.User;
@@ -28,7 +30,7 @@ public class UserCursorWrapper extends CursorWrapper {
         user.setId(java.util.UUID.fromString(uuidString));
         user.setName(name);
         user.setSurname(surname);
-        user.setBirthday(new Date(birthday));
+        user.setBirthday(LocalDate.ofEpochDay(birthday));
         
         return user;
     }

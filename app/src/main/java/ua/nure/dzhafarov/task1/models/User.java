@@ -1,5 +1,7 @@
 package ua.nure.dzhafarov.task1.models;
 
+import org.threeten.bp.LocalDate;
+
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
@@ -19,7 +21,7 @@ public class User implements Serializable {
     
     private String surname;
     
-    private Date birthday;
+    private LocalDate birthday;
     
     public User() {
         this(UUID.randomUUID());
@@ -27,7 +29,7 @@ public class User implements Serializable {
 
     private User(UUID id) {
         this.id = id;
-        birthday = new Date();
+        birthday = LocalDate.now();
     }
     
     public UUID getId() {
@@ -54,11 +56,11 @@ public class User implements Serializable {
         this.surname = surname;
     }
 
-    public Date getBirthday() {
+    public LocalDate getBirthday() {
         return birthday;
     }
 
-    public void setBirthday(Date birthday) {
+    public void setBirthday(LocalDate birthday) {
         this.birthday = birthday;
     }
     
@@ -71,13 +73,12 @@ public class User implements Serializable {
     }
     
     private int getDiffYears() {
-        Calendar a = Calendar.getInstance();
-        a.setTime(birthday);
-        Calendar b = getInstance();
-
-        int diff = b.get(YEAR) - a.get(YEAR);
-        if (a.get(MONTH) > b.get(MONTH) ||
-                (a.get(MONTH) == b.get(MONTH) && a.get(DATE) > b.get(DATE))) {
+        LocalDate a = birthday;
+        LocalDate b = LocalDate.now();
+        
+        int diff = b.getYear() - a.getYear();
+        if (a.getMonthValue() > b.getMonthValue() ||
+                (a.getMonthValue() == b.getMonthValue() && a.getDayOfMonth() > b.getDayOfMonth())) {
             diff--;
         }
         

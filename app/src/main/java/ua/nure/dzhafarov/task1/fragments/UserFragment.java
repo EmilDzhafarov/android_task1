@@ -16,6 +16,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.format.DateTimeFormatter;
+
 import java.util.Date;
 import java.util.UUID;
 
@@ -113,7 +116,7 @@ public class UserFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_DATE && resultCode == Activity.RESULT_OK) {
-            Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+            LocalDate date = (LocalDate) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
             user.setBirthday(date);
             updateDate();
         }
@@ -126,7 +129,9 @@ public class UserFragment extends Fragment {
     }
 
     private void updateDate() {
-        dateButton.setText(DateFormat.format("dd MMM yyyy", user.getBirthday()));
+        dateButton.setText(
+                DateTimeFormatter.ofPattern("dd MMM yyyy").format(user.getBirthday())
+        );
     }
     
     private void saveUser() {
@@ -139,7 +144,7 @@ public class UserFragment extends Fragment {
             errorMessage = getString(R.string.error_save_user_empty_name);
         } else if (surname.isEmpty()) {
             errorMessage = getString(R.string.error_save_user_empty_surname);
-        } else if (user.getBirthday().getTime() >= new Date().getTime()) {
+        } else if (user.getBirthday().isAfter(LocalDate.now())) {
            errorMessage = getString(R.string.error_save_user_invalid_birthday_date);  
         } 
         

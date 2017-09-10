@@ -5,8 +5,13 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import org.threeten.bp.Instant;
+import org.threeten.bp.temporal.TemporalField;
+import org.threeten.bp.temporal.TemporalUnit;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import ua.nure.dzhafarov.task1.database.UserBaseHelper;
 import ua.nure.dzhafarov.task1.database.UserCursorWrapper;
@@ -61,7 +66,7 @@ public class UserLab {
         values.put(UUID, user.getId().toString());
         values.put(NAME, user.getName());
         values.put(SURNAME, user.getSurname());
-        values.put(BIRTHDAY, user.getBirthday().getTime());
+        values.put(BIRTHDAY, user.getBirthday().toEpochDay());
 
         return values;
     }
