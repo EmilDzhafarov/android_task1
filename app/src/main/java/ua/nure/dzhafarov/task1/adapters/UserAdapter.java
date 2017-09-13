@@ -16,9 +16,7 @@ import ua.nure.dzhafarov.task1.R;
 import ua.nure.dzhafarov.task1.activities.UserActivity;
 import ua.nure.dzhafarov.task1.fragments.UserListFragment;
 import ua.nure.dzhafarov.task1.models.User;
-
-import static ua.nure.dzhafarov.task1.fragments.UserListFragment.REQUEST_UPDATE_UI;
-
+import ua.nure.dzhafarov.task1.utils.UserManager;
 
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserHolder> {
 
@@ -58,10 +56,10 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserHolder> {
                 switch (item.getItemId()) {
                     case R.id.edit_user:
                         Intent intent = UserActivity.newIntent(fragment.getActivity(), user.getId());
-                        fragment.startActivityForResult(intent, REQUEST_UPDATE_UI);
+                        fragment.startActivity(intent);
                         return true;
                     case R.id.delete_user:
-                        fragment.deleteUserAndUpdateUI(user);
+                        UserManager.getInstance(fragment.getActivity()).deleteUser(user);
                         return true;
                     default:
                         return false;

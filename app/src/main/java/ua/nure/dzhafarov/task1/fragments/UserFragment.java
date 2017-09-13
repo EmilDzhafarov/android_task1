@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,12 +18,12 @@ import android.widget.Toast;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.format.DateTimeFormatter;
 
-import java.util.Date;
 import java.util.UUID;
 
 import ua.nure.dzhafarov.task1.R;
 import ua.nure.dzhafarov.task1.models.User;
 import ua.nure.dzhafarov.task1.utils.UserLab;
+import ua.nure.dzhafarov.task1.utils.UserManager;
 
 public class UserFragment extends Fragment {
     
@@ -62,7 +61,7 @@ public class UserFragment extends Fragment {
                 user = new User();
                 isNewUser = true;
             } else {
-                user = UserLab.getInstance(getActivity()).getUserById(id);
+                user = UserManager.getInstance(getActivity()).getUserById(id);
             }   
         }
         
@@ -159,18 +158,15 @@ public class UserFragment extends Fragment {
             user.setSurname(surname);
             
             saveUserInDb();
-            getActivity().setResult(Activity.RESULT_OK);
             getActivity().finish();
         }
     }
     
     private void saveUserInDb() {
-        UserLab lab = UserLab.getInstance(getActivity());
-        
         if (isNewUser) {
-            lab.addUser(user);
+            UserManager.getInstance(getActivity()).addUser(user);
         } else {
-            lab.updateUser(user);
+            UserManager.getInstance(getActivity()).updateUser(user);
         }
     }
 }

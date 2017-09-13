@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.pm.ActivityInfoCompat;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,19 +19,19 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import ua.nure.dzhafarov.task1.Callbacks;
 import ua.nure.dzhafarov.task1.R;
 import ua.nure.dzhafarov.task1.adapters.UserAdapter;
 import ua.nure.dzhafarov.task1.models.User;
-import ua.nure.dzhafarov.task1.utils.UserLab;
 import ua.nure.dzhafarov.task1.activities.UserActivity;
+import ua.nure.dzhafarov.task1.utils.UserManager;
 
-public class UserListFragment extends Fragment {
+public class UserListFragment extends Fragment implements Callbacks {
     
-    public static final int REQUEST_UPDATE_UI = 1;
-
     private RecyclerView recyclerView;
     private TextView textViewForNonUsers;
     private UserAdapter userAdapter;
+    private UserManager userManager;
     
     private List<User> users;
 
@@ -61,9 +62,13 @@ public class UserListFragment extends Fragment {
         users = new ArrayList<>();
         userAdapter = new UserAdapter(users, this);
         recyclerView.setAdapter(userAdapter);
-        updateUI();
+        
+        userManager = UserManager.getInstance(getActivity());
+        userManager.registerCallbacks(this);
+        
+        userManager.loadUsers();
     }
-
+    
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
@@ -75,37 +80,36 @@ public class UserListFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.action_add_user:
                 Intent intent = new Intent(getActivity(), UserActivity.class);
-                startActivityForResult(intent, REQUEST_UPDATE_UI);
+                startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
-
+    
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_UPDATE_UI && resultCode == Activity.RESULT_OK) {
-            updateUI();
-        }
+    public void onUserAdded(User user) {
+        userManager.loadUsers();
     }
 
-    public void deleteUserAndUpdateUI(User user) {
+    @Override
+    public void onUserDeleted(User user) {
         int pos = users.indexOf(user);
-
-        users.remove(user);
+        users.remove(pos);
         userAdapter.notifyItemRemoved(pos);
-        UserLab.getInstance(getActivity()).deleteUser(user);
-        
         checkForEmptyUsers(users);
     }
 
-    private void updateUI() {
-        UserLab userLab = UserLab.getInstance(getActivity());
-        
-        users.clear();
-        users.addAll(userLab.getUsers());
+    @Override
+    public void onUserUpdated(User user) {
+        userManager.loadUsers();
+    }
+    
+    @Override
+    public void onUsersLoaded(List<User> users) {
+        this.users.clear();
+        this.users.addAll(users);
         userAdapter.notifyDataSetChanged();
-
         checkForEmptyUsers(users);
     }
 
