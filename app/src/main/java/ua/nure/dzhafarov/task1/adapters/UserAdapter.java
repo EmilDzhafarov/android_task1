@@ -55,7 +55,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserHolder> {
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.edit_user:
-                        Intent intent = UserActivity.newIntent(fragment.getActivity(), user.getId());
+                        Intent intent = UserActivity.newIntent(fragment.getActivity(), user);
                         fragment.startActivity(intent);
                         return true;
                     case R.id.delete_user:

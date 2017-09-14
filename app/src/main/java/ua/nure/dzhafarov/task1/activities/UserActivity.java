@@ -3,22 +3,22 @@ package ua.nure.dzhafarov.task1.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
-import java.util.UUID;
 
 import ua.nure.dzhafarov.task1.fragments.UserFragment;
+import ua.nure.dzhafarov.task1.models.User;
 
 public class UserActivity extends SingleFragmentActivity {
     
-    public static final String EXTRA_USER_ID = "ua.nure.dzhafarov.task1.user_id";
+    public static final String EXTRA_USER = "ua.nure.dzhafarov.task1.UserActivity.user";
     
     public Fragment createFragment() {
-        UUID userId = (UUID) getIntent().getSerializableExtra(EXTRA_USER_ID);
-        return UserFragment.newInstance(userId);   
+        User user = (User) getIntent().getSerializableExtra(EXTRA_USER);
+        return UserFragment.newInstance(user);   
     }
 
-    public static Intent newIntent(Context packageContext, UUID userId) {
+    public static Intent newIntent(Context packageContext, User user) {
         Intent intent = new Intent(packageContext, UserActivity.class);
-        intent.putExtra(EXTRA_USER_ID, userId);
+        intent.putExtra(EXTRA_USER, user);
         return intent;
     }
 }

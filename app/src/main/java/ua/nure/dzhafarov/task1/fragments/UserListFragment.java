@@ -1,10 +1,8 @@
 package ua.nure.dzhafarov.task1.fragments;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.pm.ActivityInfoCompat;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -19,7 +17,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import ua.nure.dzhafarov.task1.Callbacks;
+import ua.nure.dzhafarov.task1.utils.Callbacks;
 import ua.nure.dzhafarov.task1.R;
 import ua.nure.dzhafarov.task1.adapters.UserAdapter;
 import ua.nure.dzhafarov.task1.models.User;
@@ -58,7 +56,7 @@ public class UserListFragment extends Fragment implements Callbacks {
         DividerItemDecoration dividerItemDecoration =
                 new DividerItemDecoration(recyclerView.getContext(), manager.getOrientation());
         recyclerView.addItemDecoration(dividerItemDecoration);
-        
+
         users = new ArrayList<>();
         userAdapter = new UserAdapter(users, this);
         recyclerView.setAdapter(userAdapter);
@@ -88,29 +86,53 @@ public class UserListFragment extends Fragment implements Callbacks {
     }
     
     @Override
-    public void onUserAdded(User user) {
-        userManager.loadUsers();
+    public void onUserAdded(final User user) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                userManager.loadUsers();
+//                users.add(user);
+//                userAdapter.notifyItemInserted(users.size() - 1);
+            }
+        });
     }
 
     @Override
-    public void onUserDeleted(User user) {
-        int pos = users.indexOf(user);
-        users.remove(pos);
-        userAdapter.notifyItemRemoved(pos);
-        checkForEmptyUsers(users);
+    public void onUserUpdated(final User user) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                userManager.loadUsers();
+//                int pos = users.indexOf(user);
+//                userAdapter.notifyItemChanged(pos);
+            }
+        });
     }
 
     @Override
-    public void onUserUpdated(User user) {
-        userManager.loadUsers();
+    public void onUserDeleted(final User user) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                int pos = users.indexOf(user);
+                users.remove(pos);
+                userAdapter.notifyItemRemoved(pos);
+                checkForEmptyUsers(users);     
+            }
+        });
     }
     
     @Override
-    public void onUsersLoaded(List<User> users) {
-        this.users.clear();
-        this.users.addAll(users);
-        userAdapter.notifyDataSetChanged();
-        checkForEmptyUsers(users);
+    public void onUsersLoaded(final List<User> us) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                users.clear();
+                users.addAll(us);
+                userAdapter.notifyDataSetChanged();
+                checkForEmptyUsers(users);     
+            }
+        });
     }
 
     private void checkForEmptyUsers(List<User> users) {

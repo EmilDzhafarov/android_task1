@@ -5,13 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import org.threeten.bp.Instant;
-import org.threeten.bp.temporal.TemporalField;
-import org.threeten.bp.temporal.TemporalUnit;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import ua.nure.dzhafarov.task1.database.UserBaseHelper;
 import ua.nure.dzhafarov.task1.database.UserCursorWrapper;
@@ -29,7 +24,7 @@ public class UserLab {
     
     private SQLiteDatabase database;
     
-    public static synchronized UserLab getInstance(Context context) {
+    static synchronized UserLab getInstance(Context context) {
         if (instance == null) {
             instance = new UserLab(context);
         }
@@ -38,10 +33,10 @@ public class UserLab {
     }
     
     private UserLab(Context context) {
-        database = new UserBaseHelper(context.getApplicationContext()).getWritableDatabase();
+        database = new UserBaseHelper(context).getWritableDatabase();
     }
     
-    public List<User> getUsers() {
+    List<User> getUsers() {
         List<User> users = new ArrayList<>();
 
         UserCursorWrapper cursor = queryUsers(null, null);
@@ -84,39 +79,21 @@ public class UserLab {
 
         return new UserCursorWrapper(cursor);
     }
-
-    public User getUserById(java.util.UUID id) {
-        UserCursorWrapper cursor = queryUsers(
-                UUID + " = ?",
-                new String[] {id.toString()}
-        );
-
-        try {
-            if (cursor.getCount() == 0) {
-                return null;
-            }
-
-            cursor.moveToFirst();
-            return cursor.getUser();
-        } finally {
-            cursor.close();
-        }
-    }
     
-    public void addUser(User user) {
+    void addUser(User user) {
         ContentValues values = getContentValues(user);
         
         database.insert(TABLE_NAME, null, values);
     }
     
-    public void updateUser(User user) {
+    void updateUser(User user) {
         ContentValues values = getContentValues(user);
         String uuid = user.getId().toString();
 
         database.update(TABLE_NAME, values, UUID + " = ?", new String[] {uuid});
     }
     
-    public void deleteUser(User user) {
+    void deleteUser(User user) {
         String uuid = user.getId().toString();
 
         database.delete(TABLE_NAME, UUID + " = ?", new String[] {uuid});

@@ -2,11 +2,6 @@ package ua.nure.dzhafarov.task1.utils;
 
 import android.content.Context;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-import ua.nure.dzhafarov.task1.Callbacks;
 import ua.nure.dzhafarov.task1.models.User;
 
 public class UserManager {
@@ -21,7 +16,7 @@ public class UserManager {
     
     public static synchronized UserManager getInstance(Context context) {
         if (instance == null) {
-            instance = new UserManager(context);
+            instance = new UserManager(context.getApplicationContext());
         }
         
         return instance;
@@ -32,106 +27,49 @@ public class UserManager {
     }
     
     public void loadUsers() {
-        final List<User> users = new ArrayList<>();
-        
-        Thread t = new Thread(
+        new Thread(
                 new Runnable() {
                     @Override
                     public void run() {
-                     users.addAll(userLab.getUsers());   
+                        callbacks.onUsersLoaded(userLab.getUsers());
                     }
                 }
-        );
-        t.start();
-        
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            callbacks.onUsersLoaded(users);
-        }
+        ).start();
     }
     
     public void addUser(final User user) {
-        Thread t = new Thread(
+        new Thread(
                 new Runnable(){
                     @Override
                     public void run() {
                         userLab.addUser(user);
+                        callbacks.onUserAdded(user);
                     }
                 }
-        );
-        t.start();
-
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            callbacks.onUserAdded(user);
-        }
+        ).start();
     }
     
     public void deleteUser(final User user) {
-        Thread t = new Thread(
+        new Thread(
                 new Runnable() {
                     @Override
                     public void run() {
                         userLab.deleteUser(user);
+                        callbacks.onUserDeleted(user);
                     }
                 }
-        );
-        t.start();
-
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            callbacks.onUserDeleted(user);
-        }
+        ).start();
     }
     
     public void updateUser(final User user) {
-        Thread t = new Thread(
+        new Thread(
                 new Runnable() {
                     @Override
                     public void run() {
                         userLab.updateUser(user);
+                        callbacks.onUserUpdated(user);
                     }
                 }
-        );
-        t.start();
-
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            callbacks.onUserUpdated(user);
-        }
-    }
-    
-    public User getUserById(final UUID id) {
-        final User[] users = new User[1];
-        
-        Thread t = new Thread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                       users[0] = userLab.getUserById(id);
-                    }
-                }
-        );
-        t.start();
-
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        
-        return users[0];
+        ).start();
     }
 }

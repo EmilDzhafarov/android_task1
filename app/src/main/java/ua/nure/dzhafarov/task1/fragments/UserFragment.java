@@ -27,7 +27,7 @@ import ua.nure.dzhafarov.task1.utils.UserManager;
 
 public class UserFragment extends Fragment {
     
-    public static final String ARG_USER_ID = "user_id";
+    public static final String USER = "user";
     private static final String DIALOG_DATE = "DialogDate";
     private static final String USER_DATA = "user_data";
     private static final int REQUEST_DATE = 0;
@@ -39,9 +39,9 @@ public class UserFragment extends Fragment {
     private EditText surnameEditText;
     private Button dateButton;
 
-    public static UserFragment newInstance(UUID id) {
+    public static UserFragment newInstance(User user) {
         Bundle bundle = new Bundle();
-        bundle.putSerializable(ARG_USER_ID, id);
+        bundle.putSerializable(USER, user);
 
         UserFragment userFragment = new UserFragment();
         userFragment.setArguments(bundle);
@@ -55,13 +55,13 @@ public class UserFragment extends Fragment {
         if (saveBundleState != null) {
             user = (User) saveBundleState.getSerializable(USER_DATA);
         } else {
-            UUID id = (UUID) getArguments().getSerializable(ARG_USER_ID);
+            User user = (User) getArguments().getSerializable(USER);
 
-            if (id == null) {
-                user = new User();
+            if (user == null) {
+                this.user = new User();
                 isNewUser = true;
             } else {
-                user = UserManager.getInstance(getActivity()).getUserById(id);
+                this.user = user;
             }   
         }
         
@@ -156,17 +156,15 @@ public class UserFragment extends Fragment {
         } else {
             user.setName(name);
             user.setSurname(surname);
+            UserManager manager = UserManager.getInstance(getActivity());
             
-            saveUserInDb();
+            if (isNewUser) {
+                manager.addUser(user);
+            } else {
+                manager.updateUser(user);
+            }
+            
             getActivity().finish();
-        }
-    }
-    
-    private void saveUserInDb() {
-        if (isNewUser) {
-            UserManager.getInstance(getActivity()).addUser(user);
-        } else {
-            UserManager.getInstance(getActivity()).updateUser(user);
         }
     }
 }
