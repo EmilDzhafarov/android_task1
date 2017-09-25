@@ -1,7 +1,7 @@
 package ua.nure.dzhafarov.task1.utils;
 
 import android.content.Context;
-
+import java.util.List;
 import ua.nure.dzhafarov.task1.models.User;
 
 public class UserManager {
@@ -31,7 +31,8 @@ public class UserManager {
                 new Runnable() {
                     @Override
                     public void run() {
-                        callbacks.onUsersLoaded(userLab.getUsers());
+                        List<User> users = userLab.getUsers();
+                        callbacks.onUsersLoaded(users);
                     }
                 }
         ).start();

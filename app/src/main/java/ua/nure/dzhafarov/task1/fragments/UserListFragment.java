@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,12 +26,12 @@ import ua.nure.dzhafarov.task1.activities.UserActivity;
 import ua.nure.dzhafarov.task1.utils.UserManager;
 
 public class UserListFragment extends Fragment implements Callbacks {
-    
+
     private RecyclerView recyclerView;
     private TextView textViewForNonUsers;
     private UserAdapter userAdapter;
     private UserManager userManager;
-    
+
     private List<User> users;
 
     @Override
@@ -47,8 +48,8 @@ public class UserListFragment extends Fragment implements Callbacks {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
-        textViewForNonUsers = (TextView) view.findViewById(R.id.text_view_for_non_users); 
+
+        textViewForNonUsers = (TextView) view.findViewById(R.id.text_view_for_non_users);
         recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         LinearLayoutManager manager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(manager);
@@ -58,15 +59,27 @@ public class UserListFragment extends Fragment implements Callbacks {
         recyclerView.addItemDecoration(dividerItemDecoration);
 
         users = new ArrayList<>();
-        userAdapter = new UserAdapter(users, this);
-        recyclerView.setAdapter(userAdapter);
+
+        userAdapter = new UserAdapter(users, new UserAdapter.UserClickListener() {
+            @Override
+            public void onUserClicked(User user) {
+                int pos = users.indexOf(user);
+
+                recyclerView
+                        .findViewHolderForAdapterPosition(pos)
+                        .itemView
+                        .setOnCreateContextMenuListener(new ContextMenuListenerImpl(user));
+            }
+        });
         
+        recyclerView.setAdapter(userAdapter);
+
         userManager = UserManager.getInstance(getActivity());
         userManager.registerCallbacks(this);
-        
+
         userManager.loadUsers();
     }
-    
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
@@ -84,15 +97,13 @@ public class UserListFragment extends Fragment implements Callbacks {
                 return super.onOptionsItemSelected(item);
         }
     }
-    
+
     @Override
     public void onUserAdded(final User user) {
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 userManager.loadUsers();
-//                users.add(user);
-//                userAdapter.notifyItemInserted(users.size() - 1);
             }
         });
     }
@@ -103,8 +114,6 @@ public class UserListFragment extends Fragment implements Callbacks {
             @Override
             public void run() {
                 userManager.loadUsers();
-//                int pos = users.indexOf(user);
-//                userAdapter.notifyItemChanged(pos);
             }
         });
     }
@@ -117,11 +126,11 @@ public class UserListFragment extends Fragment implements Callbacks {
                 int pos = users.indexOf(user);
                 users.remove(pos);
                 userAdapter.notifyItemRemoved(pos);
-                checkForEmptyUsers(users);     
+                checkForEmptyUsers(users);
             }
         });
     }
-    
+
     @Override
     public void onUsersLoaded(final List<User> us) {
         getActivity().runOnUiThread(new Runnable() {
@@ -129,8 +138,9 @@ public class UserListFragment extends Fragment implements Callbacks {
             public void run() {
                 users.clear();
                 users.addAll(us);
+
                 userAdapter.notifyDataSetChanged();
-                checkForEmptyUsers(users);     
+                checkForEmptyUsers(users);
             }
         });
     }
@@ -143,5 +153,40 @@ public class UserListFragment extends Fragment implements Callbacks {
             recyclerView.setVisibility(View.VISIBLE);
             textViewForNonUsers.setVisibility(View.GONE);
         }
+    }
+
+    private class ContextMenuListenerImpl implements View.OnCreateContextMenuListener {
+
+        private User user;
+
+        ContextMenuListenerImpl(User user) {
+            this.user = user;
+        }
+
+        @Override
+        public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+            MenuItem edit = menu.add(Menu.NONE, R.id.edit_user, Menu.NONE, R.string.edit_user);
+            MenuItem delete = menu.add(Menu.NONE, R.id.delete_user, Menu.NONE, R.string.delete_user);
+
+            edit.setOnMenuItemClickListener(onChange);
+            delete.setOnMenuItemClickListener(onChange);
+        }
+
+        private final MenuItem.OnMenuItemClickListener onChange = new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.edit_user:
+                        Intent intent = UserActivity.newIntent(getActivity(), user);
+                        startActivity(intent);
+                        return true;
+                    case R.id.delete_user:
+                        UserManager.getInstance(getActivity()).deleteUser(user);
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        };
     }
 }
