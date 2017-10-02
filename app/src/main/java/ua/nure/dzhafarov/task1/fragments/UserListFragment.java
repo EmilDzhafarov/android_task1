@@ -18,15 +18,21 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import ua.nure.dzhafarov.task1.utils.Callbacks;
 import ua.nure.dzhafarov.task1.R;
 import ua.nure.dzhafarov.task1.adapters.UserAdapter;
 import ua.nure.dzhafarov.task1.models.User;
 import ua.nure.dzhafarov.task1.activities.UserActivity;
 import ua.nure.dzhafarov.task1.utils.UserManager;
+import ua.nure.dzhafarov.task1.utils.UserOperationListener;
 
-public class UserListFragment extends Fragment implements Callbacks {
+import static android.app.Activity.RESULT_OK;
 
+public class UserListFragment extends Fragment {
+
+    public static final int REQUEST_USER_ADD = 1;
+    public static final int REQUEST_USER_UPDATE = 2;
+    public static final String USER_CHANGED = "user_changed";
+    
     private RecyclerView recyclerView;
     private TextView textViewForNonUsers;
     private UserAdapter userAdapter;
@@ -60,9 +66,9 @@ public class UserListFragment extends Fragment implements Callbacks {
 
         users = new ArrayList<>();
 
-        userAdapter = new UserAdapter(users, new UserAdapter.UserClickListener() {
+        userAdapter = new UserAdapter(users, new UserOperationListener<User>() {
             @Override
-            public void onUserClicked(User user) {
+            public void onSuccess(User user) {
                 int pos = users.indexOf(user);
 
                 recyclerView
@@ -75,9 +81,7 @@ public class UserListFragment extends Fragment implements Callbacks {
         recyclerView.setAdapter(userAdapter);
 
         userManager = UserManager.getInstance(getActivity());
-        userManager.registerCallbacks(this);
-
-        userManager.loadUsers();
+        loadUsers();
     }
 
     @Override
@@ -91,61 +95,76 @@ public class UserListFragment extends Fragment implements Callbacks {
         switch (item.getItemId()) {
             case R.id.action_add_user:
                 Intent intent = new Intent(getActivity(), UserActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, REQUEST_USER_ADD);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    @Override
-    public void onUserAdded(final User user) {
-        getActivity().runOnUiThread(new Runnable() {
+    private void loadUsers() {
+        userManager.loadUsers(new UserOperationListener<List<User>>() {
             @Override
-            public void run() {
-                userManager.loadUsers();
+            public void onSuccess(final List<User> result) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        users.clear();
+                        users.addAll(result);
+
+                        userAdapter.notifyDataSetChanged();
+                        showText(users);
+                    }
+                });
             }
         });
     }
-
+    
     @Override
-    public void onUserUpdated(final User user) {
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                userManager.loadUsers();
-            }
-        });
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_USER_ADD && resultCode == RESULT_OK) {
+            
+            User user = (User) data.getSerializableExtra(USER_CHANGED);
+            
+            userManager.addUser(user, new UserOperationListener<User>() {
+                @Override
+                public void onSuccess(final User result) {
+                    getActivity().runOnUiThread(
+                            new Runnable() {
+                                @Override
+                                public void run() {
+                                    users.add(result);
+                                    showText(users);
+                                    userAdapter.notifyItemInserted(users.size() - 1);              
+                                }
+                            }
+                    );
+                }
+            });
+        }
+        
+        if (requestCode == REQUEST_USER_UPDATE && resultCode == RESULT_OK) {
+            final User user = (User) data.getSerializableExtra(USER_CHANGED);
+            
+            userManager.updateUser(user, new UserOperationListener<User>() {
+                @Override
+                public void onSuccess(final User result) {
+                    getActivity().runOnUiThread(
+                            new Runnable() {
+                                @Override
+                                public void run() {
+                                    int pos = users.indexOf(result);
+                                    users.set(pos, user);
+                                    userAdapter.notifyItemChanged(pos);
+                                }
+                            }
+                    );
+                }
+            });
+        }
     }
 
-    @Override
-    public void onUserDeleted(final User user) {
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                int pos = users.indexOf(user);
-                users.remove(pos);
-                userAdapter.notifyItemRemoved(pos);
-                checkForEmptyUsers(users);
-            }
-        });
-    }
-
-    @Override
-    public void onUsersLoaded(final List<User> us) {
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                users.clear();
-                users.addAll(us);
-
-                userAdapter.notifyDataSetChanged();
-                checkForEmptyUsers(users);
-            }
-        });
-    }
-
-    private void checkForEmptyUsers(List<User> users) {
+    private void showText(List<User> users) {
         if (users.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
             textViewForNonUsers.setVisibility(View.VISIBLE);
@@ -178,10 +197,23 @@ public class UserListFragment extends Fragment implements Callbacks {
                 switch (item.getItemId()) {
                     case R.id.edit_user:
                         Intent intent = UserActivity.newIntent(getActivity(), user);
-                        startActivity(intent);
+                        startActivityForResult(intent, REQUEST_USER_UPDATE);
                         return true;
                     case R.id.delete_user:
-                        UserManager.getInstance(getActivity()).deleteUser(user);
+                        UserManager.getInstance(getActivity()).deleteUser(user, new UserOperationListener<User>() {
+                            @Override
+                            public void onSuccess(final User result) {
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        int pos = users.indexOf(result);
+                                        users.remove(pos);
+                                        userAdapter.notifyItemRemoved(pos);
+                                        showText(users);
+                                    }
+                                });
+                            }
+                        });
                         return true;
                     default:
                         return false;

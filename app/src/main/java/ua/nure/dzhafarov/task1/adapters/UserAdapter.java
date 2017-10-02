@@ -8,13 +8,10 @@ import android.widget.TextView;
 import java.util.List;
 import ua.nure.dzhafarov.task1.R;
 import ua.nure.dzhafarov.task1.models.User;
+import ua.nure.dzhafarov.task1.utils.UserOperationListener;
 
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserHolder> {
     
-    public interface UserClickListener{
-        void onUserClicked(User user);
-    }
-
     class UserHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener {
 
         private User user;
@@ -38,15 +35,15 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserHolder> {
 
         @Override
         public boolean onLongClick(View v) {
-            listener.onUserClicked(user);
+            listener.onSuccess(user);
             return false;
         }
     }
 
     private List<User> users;
-    private UserClickListener listener;
+    private UserOperationListener<User> listener;
 
-    public UserAdapter(List<User> users, UserClickListener listener) {
+    public UserAdapter(List<User> users, UserOperationListener<User> listener) {
         this.users = users;
         this.listener = listener;
     }

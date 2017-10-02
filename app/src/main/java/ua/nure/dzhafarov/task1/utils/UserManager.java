@@ -8,7 +8,6 @@ public class UserManager {
     
     private static UserManager instance;
     private UserLab userLab;
-    private Callbacks callbacks;
     
     private UserManager(Context context) {
         userLab = UserLab.getInstance(context);
@@ -22,53 +21,49 @@ public class UserManager {
         return instance;
     }
     
-    public void registerCallbacks(Callbacks callbacks) {
-        this.callbacks = callbacks;
-    }
-    
-    public void loadUsers() {
+    public void loadUsers(final UserOperationListener<List<User>> listener) {
         new Thread(
                 new Runnable() {
                     @Override
                     public void run() {
                         List<User> users = userLab.getUsers();
-                        callbacks.onUsersLoaded(users);
+                        listener.onSuccess(users);
                     }
                 }
         ).start();
     }
     
-    public void addUser(final User user) {
+    public void addUser(final User user, final UserOperationListener<User> listener) {
         new Thread(
                 new Runnable(){
                     @Override
                     public void run() {
                         userLab.addUser(user);
-                        callbacks.onUserAdded(user);
+                        listener.onSuccess(user);
                     }
                 }
         ).start();
     }
     
-    public void deleteUser(final User user) {
+    public void deleteUser(final User user, final UserOperationListener<User> listener) {
         new Thread(
                 new Runnable() {
                     @Override
                     public void run() {
                         userLab.deleteUser(user);
-                        callbacks.onUserDeleted(user);
+                        listener.onSuccess(user);
                     }
                 }
         ).start();
     }
     
-    public void updateUser(final User user) {
+    public void updateUser(final User user, final UserOperationListener<User> listener) {
         new Thread(
                 new Runnable() {
                     @Override
                     public void run() {
                         userLab.updateUser(user);
-                        callbacks.onUserUpdated(user);
+                        listener.onSuccess(user);
                     }
                 }
         ).start();

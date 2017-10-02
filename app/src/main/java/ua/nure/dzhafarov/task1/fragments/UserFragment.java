@@ -18,12 +18,14 @@ import android.widget.Toast;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.format.DateTimeFormatter;
 
-import java.util.UUID;
-
 import ua.nure.dzhafarov.task1.R;
 import ua.nure.dzhafarov.task1.models.User;
-import ua.nure.dzhafarov.task1.utils.UserLab;
 import ua.nure.dzhafarov.task1.utils.UserManager;
+import ua.nure.dzhafarov.task1.utils.UserOperationListener;
+
+import static ua.nure.dzhafarov.task1.fragments.UserListFragment.REQUEST_USER_ADD;
+import static ua.nure.dzhafarov.task1.fragments.UserListFragment.REQUEST_USER_UPDATE;
+import static ua.nure.dzhafarov.task1.fragments.UserListFragment.USER_CHANGED;
 
 public class UserFragment extends Fragment {
     
@@ -33,7 +35,6 @@ public class UserFragment extends Fragment {
     private static final int REQUEST_DATE = 0;
     
     private User user;
-    private boolean isNewUser;
     
     private EditText nameEditText;
     private EditText surnameEditText;
@@ -56,10 +57,9 @@ public class UserFragment extends Fragment {
             user = (User) saveBundleState.getSerializable(USER_DATA);
         } else {
             User user = (User) getArguments().getSerializable(USER);
-
+            
             if (user == null) {
                 this.user = new User();
-                isNewUser = true;
             } else {
                 this.user = user;
             }   
@@ -156,15 +156,15 @@ public class UserFragment extends Fragment {
         } else {
             user.setName(name);
             user.setSurname(surname);
-            UserManager manager = UserManager.getInstance(getActivity());
             
-            if (isNewUser) {
-                manager.addUser(user);
-            } else {
-                manager.updateUser(user);
-            }
-            
-            getActivity().finish();
+            passUserToParentActivity(user);
         }
+    }
+    
+    private void passUserToParentActivity(User user) {
+        Intent intent = new Intent();
+        intent.putExtra(USER_CHANGED, user);
+        getActivity().setResult(Activity.RESULT_OK, intent);
+        getActivity().finish();
     }
 }
